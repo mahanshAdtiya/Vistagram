@@ -25,11 +25,12 @@ export const postAPI = {
   getUserPosts: () => api.get('/api/v1/post/userpost/all'),
   likePost: (postId: string) => api.get(`/api/v1/post/${postId}/like`),
   dislikePost: (postId: string) => api.get(`/api/v1/post/${postId}/dislike`),
-  addComment: (postId: string, data: { comment: string }) =>
+  addComment: (postId: string, data: { commentText: string }) =>
     api.post(`/api/v1/post/${postId}/comment`, data),
   getComments: (postId: string) =>
     api.post(`/api/v1/post/${postId}/comment/all`),
   deletePost: (postId: string) => api.delete(`/api/v1/post/delete/${postId}`),
+  getFeedPosts: () => api.get('/api/v1/post/feed'),
 
   getFilteredPosts: (params: {
     authorId?: string;

@@ -89,7 +89,7 @@ const PostSearchBar: React.FC<PostSearchBarProps> = ({
           placeholder='e.g. "mahansh  #travel"'
           onKeyDown={(e) => e.key === "Enter" && parseInput()}
         />
-        <Button className="ml-2" onClick={parseInput}>
+        <Button className="ml-2 bg-[#212328]" onClick={parseInput}>
           Search
         </Button>
       </div>
@@ -98,7 +98,7 @@ const PostSearchBar: React.FC<PostSearchBarProps> = ({
         {/* Likes Sort */}
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button className="px-10" variant="ghost" size="icon" onClick={() => toggleSort("sortLikes")}>
+            <Button className="px-7" variant="ghost" size="icon" onClick={() => toggleSort("sortLikes")}>
               <div className="flex items-center justify-between">
                 <ThumbsUp className="h-5 w-5 mr-1 text-muted-foreground" />
                 <ArrowDownUp
@@ -118,7 +118,7 @@ const PostSearchBar: React.FC<PostSearchBarProps> = ({
         {/* Time Sort */}
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button className="px-10" variant="ghost" size="icon" onClick={() => toggleSort("sortTime")}>
+            <Button className="px-7" variant="ghost" size="icon" onClick={() => toggleSort("sortTime")}>
               <div className="flex items-center justify-between">
                <Clock className="h-5 w-5 mr-1 text-muted-foreground" />
                 <ArrowDownUp

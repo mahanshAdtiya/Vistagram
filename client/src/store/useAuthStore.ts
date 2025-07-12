@@ -82,8 +82,6 @@ export const useAuthStore = create<AuthStore>((set) => ({
     try {
       const res = await userAPI.getMe();
       if (res.data.success) {
-        console.log("HAHA | RESPONSE: ", res.data)
-        console.log("HAHA | VALID TOKEN")
         set({ user: res.data.user, isHydrated: true });
       } else {
         set({ user: null, isHydrated: true });
