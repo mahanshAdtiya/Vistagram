@@ -1,4 +1,4 @@
-export default function LandingPage() {
+export default function ExplorePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-rose-100 dark:from-gray-900 dark:to-gray-800 flex flex-col items-center justify-center px-4 text-center">
       <h1 className="text-5xl md:text-6xl font-extrabold text-rose-600 dark:text-rose-400 mb-4">
