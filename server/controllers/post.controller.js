@@ -3,7 +3,6 @@ import cloudinary from "../utils/cloudinary.js";
 import { Post } from "../models/post.model.js";
 import { User } from "../models/user.model.js";
 import { Comment } from "../models/comment.model.js";
-// import { getReceiverSocketId, io } from "../socket/socket.js";
 import { extractHashtags } from "../utils/extractHashtags.js"; 
 
 export const addNewPost = async (req, res) => {
@@ -59,15 +58,48 @@ export const addNewPost = async (req, res) => {
 
 export const getAllPost = async (req, res) => {
     try {
-        const posts = await Post.find().sort({ createdAt: -1 })
-            .populate({ path: 'author', select: 'username profilePicture' })
-            .populate({
-                path: 'comments',
-                sort: { createdAt: -1 },
-                populate: { path: 'author', select: 'username profilePicture' }
-            });
+        console.log("HAHA | REQ QUERY: ", req.query)
+        const { authorId, sortLikes, hashtags } = req.query;
 
-        return res.status(200).json({ posts, success: true });
+        const query = {};
+
+        if (authorId) {
+            query.author = authorId;
+        }
+
+        if (hashtags) {
+            const hashtagArray = hashtags.split(',').map(tag => tag.trim().toLowerCase());
+            query.hashtags = { $in: hashtagArray };
+        }
+
+        let sortOptions = { createdAt: -1 };
+
+        if (sortLikes === 'asc') {
+            sortOptions = { likesCount: 1 };
+        } else if (sortLikes === 'desc') {
+            sortOptions = { likesCount: -1 };
+        }
+
+        const posts = await Post.aggregate([
+            { $match: query },
+            {
+                $addFields: {
+                    likesCount: { $size: "$likes" }
+                }
+            },
+            { $sort: sortOptions }
+        ]);
+
+        const populatedPosts = await Post.populate(posts, [
+            { path: 'author', select: 'username profilePicture' },
+            {
+                path: 'comments',
+                options: { sort: { createdAt: -1 } },
+                populate: { path: 'author', select: 'username profilePicture' }
+            }
+        ]);
+
+        return res.status(200).json({ posts: populatedPosts, success: true });
 
     } catch (error) {
         console.error('Get All Posts Error:', error);
