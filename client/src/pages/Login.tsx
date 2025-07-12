@@ -1,19 +1,7 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { GalleryVerticalEnd } from "lucide-react";
-
 import { LoginForm } from "@/components";
-import { useAuthStore } from "@/store/useAuthStore";
 
 export default function LoginPage() {
-  const user = useAuthStore((state) => state.user);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (user) {
-      navigate("/", { replace: true });
-    }
-  }, [user, navigate]);
 
   return (
     <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">

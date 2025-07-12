@@ -9,18 +9,18 @@ export const register = async (req, res) => {
     try {
         const { username, email, password } = req.body;
         if (!username || !email || !password) {
-            return res.status(401).json({
-                message: "Something is missing, please check!",
+            return res.status(400).json({
                 success: false,
+                message: "All fields (username, email, password) are required.",
             });
         }
-        const user = await User.findOne({ email });
-        if (user) {
-            return res.status(401).json({
-                message: "Try different email",
-                success: false,
-            });
-        };
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+        return res.status(409).json({
+            success: false,
+            message: "Email already in use. Please use a different one.",
+        });
+        }
         const hashedPassword = await bcrypt.hash(password, 10);
         await User.create({
             username,
@@ -81,7 +81,7 @@ export const login = async (req, res) => {
             following: user.following,
             posts: populatedPosts
         }
-        return res.cookie('token', token, { httpOnly: true, sameSite: 'strict', maxAge: 1 * 24 * 60 * 60 * 1000 }).json({
+        return res.cookie('token', token, {httpOnly: true,sameSite: 'lax',secure: false,maxAge: 1 * 24 * 60 * 60 * 1000}).json({
             message: `Welcome back ${user.username}`,
             success: true,
             user
@@ -105,7 +105,7 @@ export const logout = async (_, res) => {
 
 export const editProfile = async (req, res) => {
     try {
-        const userId = req.id;
+        const user = req.user; 
         const { bio, gender } = req.body;
         const profilePicture = req.file;
         let cloudResponse;
@@ -115,13 +115,6 @@ export const editProfile = async (req, res) => {
             cloudResponse = await cloudinary.uploader.upload(fileUri);
         }
 
-        const user = await User.findById(userId).select('-password');
-        if (!user) {
-            return res.status(404).json({
-                message: 'User not found.',
-                success: false
-            });
-        };
         if (bio) user.bio = bio;
         if (gender) user.gender = gender;
         if (profilePicture) user.profilePicture = cloudResponse.secure_url;
@@ -141,7 +134,8 @@ export const editProfile = async (req, res) => {
 
 export const followOrUnfollow = async (req, res) => {
     try {
-        const currentUserId = req.id;
+       const currentUser = req.user;
+       const currentUserId = currentUser._id.toString();
         const targetUserId = req.params.id;
 
         if (currentUserId === targetUserId) {
@@ -151,7 +145,6 @@ export const followOrUnfollow = async (req, res) => {
             });
         }
 
-        const currentUser = await User.findById(currentUserId);
         const targetUser = await User.findById(targetUserId);
 
         if (!currentUser || !targetUser) {

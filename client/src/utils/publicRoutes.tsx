@@ -3,6 +3,9 @@ import { useAuthStore } from "@/store/useAuthStore";
 
 const PublicRoutes = () => {
   const user = useAuthStore((state) => state.user);
+  const isHydrated = useAuthStore((state) => state.isHydrated);
+
+  if (!isHydrated) return null;
 
   return user ? <Navigate to="/" replace /> : <Outlet />;
 };

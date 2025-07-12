@@ -8,6 +8,7 @@ const router = express.Router();
 router.route('/register').post(register);
 router.route('/login').post(login);
 router.route('/logout').get(logout);
+router.route("/me").get(isAuthenticated, (req, res) => {return res.json({success: true, user: req.user, });});
 router.route('/profile/edit').post(isAuthenticated, upload.single('profilePhoto'), editProfile);
 router.route('/followorunfollow/:id').post(isAuthenticated, followOrUnfollow);
 
