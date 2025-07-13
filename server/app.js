@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import connectDB from "./utils/db.js";
 import userRoute from "./routes/user.route.js";
 import postRoute from "./routes/post.route.js";
+import genAIRoute from "./routes/genAI.route.js"
 import morgan from "morgan";
 import chalk from "chalk";
 import { app, server } from "./socket/socket.js";
@@ -63,6 +64,7 @@ app.use((req, res, next) => {
 // 📦 Routes
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/post", postRoute);
+app.use("/api/v1/genAI", genAIRoute)
 
 server.listen(PORT, () => {
   connectDB();

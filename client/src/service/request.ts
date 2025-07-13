@@ -63,3 +63,7 @@ export const postAPI = {
   
   getSinglePost: (postId: string) => api.get(`/api/v1/post/${postId}`),
 };
+
+export const genAIAPI ={
+  generateCaption: (data: FormData) => api.post('/api/v1/genAI/generate-caption', data),
+}
