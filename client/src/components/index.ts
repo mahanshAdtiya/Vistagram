@@ -5,3 +5,5 @@ export {default as Posts} from './Posts';
 export {default as CreatePost} from './CreatePost';
 export {default as showLoginPrompt} from './LoginPrompt';
 export {default as SharePopover} from './SharePopover'
+export {default as RightSidebar} from './RightSidebar'
+export {default as SuggestedUsers} from './SuggestedUsers'

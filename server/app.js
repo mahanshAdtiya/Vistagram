@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 8080;
 
 const allowedOrigins = [
   "https://headout-vistagram.netlify.app",
-  "http://localhost:5173", // if testing locally
+  "http://localhost:5173",
 ];
 
 const corsOptions = {

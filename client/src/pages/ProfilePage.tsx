@@ -23,7 +23,6 @@ const Profile: React.FC = () => {
     const fetchProfile = async () => {
       try {
         const profile = await getUserProfile(userId!);
-        console.log("HAHA | FETCHED USER: ", profile)
         setUserProfile(profile);
       } catch (err) {
         console.error("Failed to fetch profile", err);

@@ -23,8 +23,7 @@ interface PostProps {
 const Post: React.FC<PostProps> = ({ post, viewOnly = false }) => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { posts, setPosts, setSelectedPost } = usePostStore();
-
+  const { posts, setPosts, setSelectedPost,triggerRefetch } = usePostStore();
   const [text, setText] = useState('');
   const [open, setOpen] = useState(false);
   const [liked, setLiked] = useState(post.likes.includes(user?._id || ''));
@@ -109,6 +108,7 @@ const Post: React.FC<PostProps> = ({ post, viewOnly = false }) => {
     try {
       const res = await userAPI.followOrUnfollow(post.author._id);
       if (res.data.success) toast.success(res.data.message);
+      triggerRefetch()
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Follow/unfollow failed');
     }
