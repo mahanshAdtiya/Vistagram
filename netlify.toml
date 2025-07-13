@@ -1,0 +1,7 @@
+[build]
+  base = "client"
+  publish = "dist" # or "build" depending on your framework
+  command = "pnpm run build"
+
+[functions]
+  directory = "client/netlify/functions"
