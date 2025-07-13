@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from './ui/dialog';
-import { MessageCircle, MoreHorizontal, Send } from 'lucide-react';
+import { MessageCircle, MoreHorizontal, Send} from 'lucide-react';
+import { FiBookmark } from 'react-icons/fi';
+import { BsBookmarkFill } from 'react-icons/bs';
 import { Button } from './ui/button';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import CommentDialog from './CommentDialog';
@@ -24,6 +26,10 @@ const Post: React.FC<PostProps> = ({ post }) => {
   const [liked, setLiked] = useState(post.likes.includes(user?._id || ''));
   const [postLike, setPostLike] = useState(post.likes.length);
   const [comment, setComment] = useState<CommentType[]>(post.comments || []);
+  const [bookmarked, setBookmarked] = useState<boolean>(
+    user?.bookmarks?.some((b: any) => b === post._id) || false
+  );
+
 
   const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     setText(e.target.value.trim());
@@ -94,6 +100,20 @@ const Post: React.FC<PostProps> = ({ post }) => {
       toast.error(error.response?.data?.message || 'Delete failed');
     }
   };
+
+  const bookmarkHandler = async () => {
+    try {
+      const res = await postAPI.bookmarkPost(post._id);
+      if (res.data.success) {
+        setBookmarked(!bookmarked);
+        toast.success(res.data.message);
+      }
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.response?.data?.message || "Bookmark failed");
+    }
+  };
+
 
   const openCommentDialog = () => {
     setSelectedPost(post);
@@ -180,6 +200,20 @@ const Post: React.FC<PostProps> = ({ post }) => {
           />
           <Send className="cursor-pointer hover:text-gray-600" />
         </div>
+        {bookmarked ? (
+          <BsBookmarkFill
+            onClick={bookmarkHandler}
+            className="cursor-pointer text-red-600"
+            size={20}
+          />
+        ) : (
+          <FiBookmark
+            onClick={bookmarkHandler}
+            className="cursor-pointer hover:text-gray-600"
+            size={20}
+          />
+        )}
+
       </div>
 
       <span className="font-medium block mb-2">{postLike} likes</span>

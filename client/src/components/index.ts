@@ -1,5 +1,4 @@
 export {default as LoginForm} from './LoginForm';
-export {default as BottomNav} from './BottomNavBar';
 export {default as PostFiler} from './PostFilter';
 export {default as Post} from './Post';
 export {default as Posts} from './Posts';

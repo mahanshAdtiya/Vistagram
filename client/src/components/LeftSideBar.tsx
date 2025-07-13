@@ -34,7 +34,7 @@ const LeftSidebar = () => {
         logoutHandler();
         break;
       case "Profile":
-        navigate("/account");
+        navigate(`/account/${user?._id}`);
         break;
       case "Create":
         setOpen(true);

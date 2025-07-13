@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +32,14 @@ const PostSearchBar: React.FC<PostSearchBarProps> = ({
   setTableParams,
 }) => {
   const [input, setInput] = useState("");
+
+useEffect(() => {
+  const author = tableParams.searchParams.authorId || "";
+  const hashtags = tableParams.searchParams.hashtags.map((tag) => `#${tag}`);
+  const newInput = [author, ...hashtags].join(" ").trim();
+  setInput(newInput);
+}, [tableParams.searchParams]);
+
 
   const parseInput = () => {
     const parts = input.trim().split(/\s+/);
@@ -67,10 +75,10 @@ const PostSearchBar: React.FC<PostSearchBarProps> = ({
     });
   };
 
-    const getSortState = (key: "sortLikes" | "sortTime"): "asc" | "desc" | undefined => {
-        const val = tableParams.searchParams[key];
-        return val === "" ? undefined : val;
-    };
+  const getSortState = (key: "sortLikes" | "sortTime"): "asc" | "desc" | undefined => {
+      const val = tableParams.searchParams[key];
+      return val === "" ? undefined : val;
+  };
 
   const iconClass = (active: boolean, direction?: "asc" | "desc") =>
     `

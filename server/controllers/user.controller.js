@@ -62,15 +62,18 @@ export const login = async (req, res) => {
 
         const token = await jwt.sign({ userId: user._id }, process.env.SECRET_KEY, { expiresIn: '1d' });
 
-        const populatedPosts = await Promise.all(
-            user.posts.map( async (postId) => {
-                const post = await Post.findById(postId);
-                if(post.author.equals(user._id)){
-                    return post;
-                }
-                return null;
-            })
-        )
+        const populatedPosts = (
+            await Promise.all(
+                user.posts.map(async (postId) => {
+                    const post = await Post.findById(postId);
+                    if (post && post.author && post.author.equals(user._id)) {
+                        return post;
+                    }
+                    return null;
+                })
+            )
+        ).filter(Boolean);
+
         user = {
             _id: user._id,
             username: user.username,
@@ -103,34 +106,55 @@ export const logout = async (_, res) => {
     }
 };
 
-export const editProfile = async (req, res) => {
-    try {
-        const user = req.user; 
-        const { bio, gender } = req.body;
-        const profilePicture = req.file;
-        let cloudResponse;
+export const getProfile = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    let user = await User.findById(userId)
+      .populate({ path: 'posts', options: { sort: { createdAt: -1 } } })
+      .populate('bookmarks');
 
-        if (profilePicture) {
-            const fileUri = getDataUri(profilePicture);
-            cloudResponse = await cloudinary.uploader.upload(fileUri);
-        }
-
-        if (bio) user.bio = bio;
-        if (gender) user.gender = gender;
-        if (profilePicture) user.profilePicture = cloudResponse.secure_url;
-
-        await user.save();
-
-        return res.status(200).json({
-            message: 'Profile updated.',
-            success: true,
-            user
-        });
-
-    } catch (error) {
-        console.log(error);
-    }
+    return res.status(200).json({
+      user,
+      success: true,
+    });
+  } catch (error) {
+    console.log(error);
+  }
 };
+
+export const editProfile = async (req, res) => {
+  try {
+    const user = req.user;
+    const { username, email, bio } = req.body;
+    const profilePicture = req.file;
+    let cloudResponse;
+
+    if (profilePicture) {
+      const fileUri = getDataUri(profilePicture);
+      cloudResponse = await cloudinary.uploader.upload(fileUri);
+    }
+
+    if (username) user.username = username;
+    if (email) user.email = email;
+    if (bio) user.bio = bio;
+    if (profilePicture) user.profilePicture = cloudResponse.secure_url;
+
+    await user.save();
+
+    return res.status(200).json({
+      message: 'Profile updated.',
+      success: true,
+      user,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: 'Profile update failed',
+    });
+  }
+};
+
 
 export const followOrUnfollow = async (req, res) => {
     try {

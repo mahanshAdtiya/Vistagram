@@ -296,3 +296,26 @@ export const getFeedPosts = async (req, res) => {
     return res.status(500).json({ message: 'Internal server error', success: false });
   }
 };
+
+export const bookmarkPost = async (req,res) => {
+    try {
+        const postId = req.params.id;
+        const user = req.user;
+        const post = await Post.findById(postId);
+        if(!post) return res.status(404).json({message:'Post not found', success:false});
+        
+        if(user.bookmarks.includes(post._id)){
+            await user.updateOne({$pull:{bookmarks:post._id}});
+            await user.save();
+            return res.status(200).json({type:'unsaved', message:'Post removed from bookmark', success:true});
+
+        }else{
+            await user.updateOne({$addToSet:{bookmarks:post._id}});
+            await user.save();
+            return res.status(200).json({type:'saved', message:'Post bookmarked', success:true});
+        }
+
+    } catch (error) {
+        console.log(error);
+    }
+}

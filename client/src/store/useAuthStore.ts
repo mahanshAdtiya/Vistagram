@@ -1,8 +1,9 @@
 import { create } from 'zustand';
 import { userAPI } from "@/service/request";
 import { toast } from "sonner";
+import type { PostType} from '@/store/usePostStore';
 
-interface AuthUser {
+export interface AuthUser {
   _id: string;
   username: string;
   email: string;
@@ -10,7 +11,8 @@ interface AuthUser {
   bio?: string;
   followers?: string[];
   following?: string[];
-  posts?: any[];
+  posts?: PostType[];
+  bookmarks?: PostType[]
 }
 
 interface AuthStore {
@@ -22,6 +24,7 @@ interface AuthStore {
   signupWithEmail: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   fetchUser: () => Promise<void>;
+  getUserProfile: (userId: string) => Promise<AuthUser>;
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
@@ -46,7 +49,6 @@ export const useAuthStore = create<AuthStore>((set) => ({
       set({ user: null, loading: false, error: message });
     }
   },
-
 
   signupWithEmail: async (username, email, password) => {
     set({ loading: true, error: null });
@@ -91,4 +93,16 @@ export const useAuthStore = create<AuthStore>((set) => ({
       set({ user: null, isHydrated: true });
     }
   },
+  
+  getUserProfile: async (userId: string): Promise<AuthUser> => {
+    try {
+      const res = await userAPI.getProfile(userId);
+      if (res.data.success) return res.data.user;
+      else throw new Error("User not found");
+    } catch (err) {
+      toast.error("Failed to load profile");
+      throw err;
+    }
+  },
+
 }));

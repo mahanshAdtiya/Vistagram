@@ -4,21 +4,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Pagination, PaginationContent, PaginationItem, PaginationPrevious, PaginationNext, PaginationLink, } from "@/components/ui/pagination";
 import { postAPI } from "@/service/request";
 import PostFilter from "@/components/PostFilter";
+import Post from "@/components/Post"; 
 
-interface Author {
-  _id: string;
-  username: string;
-  profilePicture: string;
-}
+import type { PostType} from '@/store/usePostStore';
 
-interface Post {
-  _id: string;
-  caption: string;
-  image: string;
-  author: Author;
-  likes: string[];
-  hashtags: string[];
-}
 
 interface SearchParams {
   authorId: string;
@@ -27,7 +16,7 @@ interface SearchParams {
 }
 
 const PostExplorePage: React.FC = () => {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<PostType[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   const [tableParams, setTableParams] = useState<{
@@ -98,51 +87,14 @@ const PostExplorePage: React.FC = () => {
         />
       </div>
 
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5 justify-center">
-        {loading
-          ? Array.from({ length: tableParams.pageSize }).map((_, i) => (
-              <Skeleton key={i} className="w-full h-[300px] rounded-xl" />
-            ))
-          : posts.map((post) => (
-              <div
-                key={post._id}
-                className="bg-white rounded-xl shadow-md hover:shadow-lg transition-transform hover:-translate-y-1"
-              >
-                <img
-                  src={post.image}
-                  alt="Post"
-                  className="w-full h-[200px] object-cover rounded-t-xl"
-                />
-                <div className="p-4">
-                  <div className="flex items-center gap-3 mb-2">
-                    <img
-                      src={post.author.profilePicture}
-                      alt="Author"
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
-                    <span className="font-semibold text-sm">{post.author.username}</span>
-                  </div>
-                  <p className="text-sm text-gray-700 mb-2">{post.caption}</p>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {post.hashtags.map((tag, i) => (
-                      <span
-                        key={i}
-                        className="bg-muted px-2 py-1 rounded-full text-xs text-muted-foreground"
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-                  <a
-                    href={`/posts/${post._id}`}
-                    className="block text-center w-full bg-gray-900 text-white py-2 rounded-full text-sm hover:bg-gray-800"
-                  >
-                    View Post
-                  </a>
-                </div>
-              </div>
-            ))}
-      </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 justify-center">
+      {loading
+        ? Array.from({ length: tableParams.pageSize }).map((_, i) => (
+            <Skeleton key={i} className="w-full h-[300px] rounded-xl" />
+          ))
+        : posts.map((post) => <Post key={post._id} post={post} />)}
+    </div>
+
 
       {totalPages > 1 && (
         <Pagination className="mb-10 flex justify-center">

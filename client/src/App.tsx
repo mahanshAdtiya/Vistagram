@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
 import { ProtectedRoutes, PublicRoutes, PublicLayout } from './utils';
-import { HomePage, ExplorePage, LoginPage } from './pages';
+import { HomePage, ExplorePage, LoginPage, ProfilePage, EditPage} from './pages';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useEffect } from 'react';
 
@@ -26,6 +26,8 @@ export default function App() {
           <Route element={<PublicLayout />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/explore" element={<ExplorePage />} />
+            <Route path="/account/:id" element={<ProfilePage />} />
+            <Route path="/account/edit" element={<EditPage />} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/login" replace />} />
