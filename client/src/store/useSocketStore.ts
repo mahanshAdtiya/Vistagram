@@ -37,7 +37,7 @@ export const useSocketStore = create<SocketStore>((set, get) => ({
   notifications: [],
 
   initializeSocket: (userId) => {
-    const socket = io(import.meta.env.VITE_API_URL, {
+    const socket = io(import.meta.env.VITE_API_URL || "https://vistagram-k3y1.onrender.com", {
       query: { userId },
       transports: ['websocket'],
     });
