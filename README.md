@@ -10,7 +10,7 @@
 ## ✨ What is Vistagram?
 
 **Vistagram** is a full-stack visual social media platform inspired by Instagram and travel experiences. Users can:
-
+* 🧠 **AI-powered Captioning** using GEMINI AI to auto-generate captions based on image content
 - 📷 Upload and share photos with captions, location, and hashtags
 - 🔍 Discover posts by hashtag or user
 - 💬 Comment, ❤️ Like, 🔖 Bookmark, 🔄 Share posts
@@ -21,7 +21,6 @@
 Perfect for communities, travelers, or anyone who loves sharing moments visually.
 
 ---
-
 
 > 🚀 Live Demo:  
 > 🖥️ **Frontend**: [headout-vistagram.netlify.app](https://headout-vistagram.netlify.app)  
@@ -316,7 +315,6 @@ Includes:
 
 We're currently exploring:
 
-* 🧠 **AI-powered Captioning** using OpenAI to auto-generate captions based on image content
 * 🗺️ **POI Detection**: Recognize locations in images and recommend related Headout experiences (e.g., Eiffel Tower tickets)
 * 👓 Will enhance post discoverability and enrich the travel storytelling aspect
 
