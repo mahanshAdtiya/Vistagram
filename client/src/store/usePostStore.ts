@@ -1,27 +1,25 @@
 import { create } from 'zustand'
-
-export interface User {
-  _id: string
-  username: string
-  profilePicture?: string
-}
+import {type AuthUser} from './useAuthStore'
 
 export interface CommentType {
   _id: string
   text: string
-  author: User
+  author: AuthUser
   post: string
 }
 
 export interface PostType {
-  _id: string
-  caption?: string
-  image: string
-  author: User
-  likes: string[]
-  comments: CommentType[]
-  hashtags: string[]
+  _id: string;
+  caption?: string;
+  image: string;
+  author: AuthUser;
+  likes: string[];
+  comments: CommentType[];
+  hashtags: string[];
+  locationText?: string; 
+  locationUrl?: string;  
 }
+
 
 interface PostStore {
   posts: PostType[]

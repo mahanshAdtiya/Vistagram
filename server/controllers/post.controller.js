@@ -7,7 +7,7 @@ import { extractHashtags } from "../utils/extractHashtags.js";
 
 export const addNewPost = async (req, res) => {
   try {
-    const { caption } = req.body;
+   const { caption, locationText, locationUrl } = req.body;
     const image = req.file;
     const user = req.user;
     const authorId = user._id.toString();
@@ -16,24 +16,23 @@ export const addNewPost = async (req, res) => {
       return res.status(400).json({ message: 'Image is required', success: false });
     }
 
-    // Optimize and resize image
     const optimizedImageBuffer = await sharp(image.buffer)
       .resize({ width: 800, height: 800, fit: 'inside' })
       .toFormat('jpeg', { quality: 80 })
       .toBuffer();
 
-    // Upload to Cloudinary
     const fileUri = `data:image/jpeg;base64,${optimizedImageBuffer.toString('base64')}`;
     const cloudResponse = await cloudinary.uploader.upload(fileUri);
 
-
     const hashtags = extractHashtags(caption);
 
-    const post = await Post.create({
-      caption,
-      image: cloudResponse.secure_url,
-      author: authorId,
-      hashtags,
+   const post = await Post.create({
+        caption,
+        image: cloudResponse.secure_url,
+        author: authorId,
+        hashtags,
+        locationText,
+        locationUrl,
     });
 
     if (user) {
@@ -54,9 +53,10 @@ export const addNewPost = async (req, res) => {
   }
 };
 
+
 export const getAllPost = async (req, res) => {
     try {
-        const { authorId, sortLikes, hashtags } = req.query;
+        const { authorId, sortLikes, hashtags, location } = req.query;
 
         const query = {};
 
@@ -68,7 +68,9 @@ export const getAllPost = async (req, res) => {
             const hashtagArray = hashtags.split(',').map(tag => tag.trim().toLowerCase());
             query.hashtags = { $in: hashtagArray };
         }
-
+        if (location) {
+            query.locationText = { $regex: location, $options: 'i' };
+        }
         let sortOptions = { createdAt: -1 };
 
         if (sortLikes === 'asc') {
@@ -319,3 +321,26 @@ export const bookmarkPost = async (req,res) => {
         console.log(error);
     }
 }
+
+export const getSinglePost = async (req, res) => {
+  try {
+    const postId = req.params.id;
+
+    const post = await Post.findById(postId)
+      .populate({ path: 'author', select: 'username profilePicture' })
+      .populate({
+        path: 'comments',
+        options: { sort: { createdAt: -1 } },
+        populate: { path: 'author', select: 'username profilePicture' }
+      });
+
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found', success: false });
+    }
+
+    return res.status(200).json({ post, success: true });
+  } catch (error) {
+    console.error('Get Single Post Error:', error);
+    return res.status(500).json({ message: 'Internal server error', success: false });
+  }
+};

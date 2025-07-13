@@ -155,7 +155,6 @@ export const editProfile = async (req, res) => {
   }
 };
 
-
 export const followOrUnfollow = async (req, res) => {
     try {
        const currentUser = req.user;
@@ -207,3 +206,65 @@ export const followOrUnfollow = async (req, res) => {
         });
     }
 };
+
+export const getSuggestedUsers = async (req, res) => {
+  try {
+    const currUser = req.user;
+    const currentUserId = currUser._id.toString();
+
+    const currentUser = await User.findById(currentUserId).select('following');
+
+    if (!currentUser) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const followingList = currentUser.following;
+
+    let suggestedUserIdsSet = new Set();
+
+    if (followingList.length > 0) {
+      const secondDegreeUsers = await User.find({
+        _id: { $in: followingList }
+      }).select('followers following');
+
+      for (const user of secondDegreeUsers) {
+        user.followers.forEach(f => suggestedUserIdsSet.add(f.toString()));
+        user.following.forEach(f => suggestedUserIdsSet.add(f.toString()));
+      }
+
+      // Remove current user and already-followed users
+      suggestedUserIdsSet.delete(currentUserId);
+      followingList.forEach(id => suggestedUserIdsSet.delete(id.toString()));
+    }
+
+    let suggestedUsers = [];
+
+    if (suggestedUserIdsSet.size > 0) {
+      const suggestedUserIds = Array.from(suggestedUserIdsSet);
+
+      suggestedUsers = await User.aggregate([
+        { $match: { _id: { $in: suggestedUserIds.map(id => new mongoose.Types.ObjectId(id)) } } },
+        { $sample: { size: 10 } }, // Randomize
+        { $project: { password: 0 } }
+      ]);
+    }
+
+    // 🔁 Fallback: show random users if none found
+    if (suggestedUsers.length === 0) {
+      suggestedUsers = await User.aggregate([
+        { $match: { _id: { $ne: new mongoose.Types.ObjectId(currentUserId) } } },
+        { $sample: { size: 10 } },
+        { $project: { password: 0 } }
+      ]);
+    }
+
+    return res.status(200).json({
+      success: true,
+      users: suggestedUsers
+    });
+  } catch (error) {
+    console.error('Suggestion Error:', error);
+    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+};
+

@@ -1,5 +1,5 @@
 import express from "express";
-import { editProfile, followOrUnfollow, login, logout, register, getProfile} from "../controllers/user.controller.js";
+import { editProfile, followOrUnfollow, login, logout, register, getProfile, getSuggestedUsers} from "../controllers/user.controller.js";
 import isAuthenticated from "../middlewares/isAuthenticated.js";
 import upload from "../middlewares/multer.js";
 
@@ -12,5 +12,6 @@ router.route("/me").get(isAuthenticated, (req, res) => {return res.json({success
 router.route('/:id/profile').get(isAuthenticated, getProfile);
 router.route('/profile/edit').post(isAuthenticated, upload.single('profilePhoto'), editProfile);
 router.route('/followorunfollow/:id').post(isAuthenticated, followOrUnfollow);
+router.route('/suggested').get(isAuthenticated, getSuggestedUsers);
 
 export default router;

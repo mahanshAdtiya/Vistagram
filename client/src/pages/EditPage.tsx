@@ -80,7 +80,7 @@ const EditProfile: React.FC = () => {
               <AvatarFallback>{user?.username?.slice(0, 2).toUpperCase()}</AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="font-bold text-sm">{input.username}</h1>
+              <h1 className="font-bold text-sm">{user?.username}</h1>
             </div>
           </div>
 
@@ -100,7 +100,6 @@ const EditProfile: React.FC = () => {
           </Button>
         </div>
 
-        {/* Username */}
         <div>
           <h1 className="font-bold text-xl mb-2">Username</h1>
           <input

@@ -1,5 +1,5 @@
 import { useEffect} from 'react';
-import Post from './Post';
+import {Post} from '@/components';
 import { usePostStore } from '@/store/usePostStore';
 import { postAPI } from '@/service/request';
 import { toast } from 'sonner';

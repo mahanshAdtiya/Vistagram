@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
 import { ProtectedRoutes, PublicRoutes, PublicLayout } from './utils';
-import { HomePage, ExplorePage, LoginPage, ProfilePage, EditPage} from './pages';
+import { HomePage, ExplorePage, LoginPage, ProfilePage, EditPage, PostPage} from './pages';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useEffect } from 'react';
 
@@ -20,6 +20,9 @@ export default function App() {
       <Routes>
         <Route element={<PublicRoutes />}>
           <Route path="/login" element={<LoginPage />} />
+        </Route>
+        <Route element={<PublicLayout />}>
+          <Route path="/post/:id" element={<PostPage />} />
         </Route>
 
         <Route element={<ProtectedRoutes />}>
