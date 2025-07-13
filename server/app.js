@@ -12,12 +12,23 @@ import { app, server } from "./socket/socket.js";
 dotenv.config();
 
 const PORT = process.env.PORT || 8080;
-const allowedOrigin = process.env.URL || 'https://headout-vistagram.netlify.app/';
+
+const allowedOrigins = [
+  "https://headout-vistagram.netlify.app",
+  "http://localhost:5173", // if testing locally
+];
 
 const corsOptions = {
-  origin: allowedOrigin,
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
 };
+
 
 morgan.token("body", (req) => JSON.stringify(req.body));
 app.use(morgan((tokens, req, res) => {
