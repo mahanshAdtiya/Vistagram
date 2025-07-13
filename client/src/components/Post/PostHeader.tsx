@@ -1,7 +1,8 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Trash, MapPin} from 'lucide-react';
+import { Trash, MapPin } from 'lucide-react';
+import { useSocketStore } from '@/store/useSocketStore';
 
 import type { PostType } from '@/store/usePostStore';
 
@@ -13,8 +14,10 @@ interface Props {
 }
 
 const PostHeader: React.FC<Props> = ({ post, user, onDelete, onFollowToggle }) => {
+  const isOnline = useSocketStore((s) => s.isUserOnline(post.author._id));
+
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between flex-wrap gap-y-2">
       <div className="flex items-center gap-2">
         <Avatar>
           <AvatarImage src={post.author.profilePicture} alt="author avatar" />
@@ -22,7 +25,15 @@ const PostHeader: React.FC<Props> = ({ post, user, onDelete, onFollowToggle }) =
         </Avatar>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <h1 className="font-bold text-indigo-500 text-lg">{post.author.username}</h1>
+          <h1 className="font-bold text-indigo-500 text-lg flex items-center gap-1">
+            {post.author.username}
+            <span
+              className={`h-2 w-2 rounded-full ${
+                isOnline ? 'bg-green-500' : 'bg-gray-400'
+              }`}
+              title={isOnline ? 'Online' : 'Offline'}
+            />
+          </h1>
 
           {user?._id === post.author._id ? (
             <Badge className="bg-indigo-500 text-white text-[9px]">Author</Badge>
@@ -41,27 +52,30 @@ const PostHeader: React.FC<Props> = ({ post, user, onDelete, onFollowToggle }) =
           ) : null}
         </div>
       </div>
-      {post.locationText && post.locationUrl && (
-        <a
-          href={post.locationUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-sm text-blue-500 flex items-center gap-1 hover:underline"
-        >
-          <MapPin size={14} />
-          {post.locationText}
-        </a>
-      )}
-      {user?._id === post.author._id && (
-        <Button
-          onClick={onDelete}
-          variant="ghost"
-          className="flex items-center gap-1 bg-red-100 text-red-600 hover:bg-red-200 px-2 py-1 rounded-full text-sm"
-        >
-          <Trash size={14} />
-          Delete
-        </Button>
-      )}
+
+      <div className="flex items-center gap-2">
+        {post.locationText && post.locationUrl && (
+          <a
+            href={post.locationUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-blue-500 flex items-center gap-1 hover:underline"
+          >
+            <MapPin size={14} />
+            {post.locationText}
+          </a>
+        )}
+        {user?._id === post.author._id && (
+          <Button
+            onClick={onDelete}
+            variant="ghost"
+            className="flex items-center gap-1 bg-red-100 text-red-600 hover:bg-red-200 px-2 py-1 rounded-full text-sm"
+          >
+            <Trash size={14} />
+            Delete
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

@@ -4,36 +4,37 @@ import jwt from "jsonwebtoken";
 import getDataUri from "../utils/datauri.js";
 import cloudinary from "../utils/cloudinary.js";
 import { Post } from "../models/post.model.js";
+import { getReceiverSocketId, io } from "../socket/socket.js";
 
 export const register = async (req, res) => {
-    try {
-        const { username, email, password } = req.body;
-        if (!username || !email || !password) {
-            return res.status(400).json({
-                success: false,
-                message: "All fields (username, email, password) are required.",
-            });
-        }
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-        return res.status(409).json({
-            success: false,
-            message: "Email already in use. Please use a different one.",
-        });
-        }
-        const hashedPassword = await bcrypt.hash(password, 10);
-        await User.create({
-            username,
-            email,
-            password: hashedPassword
-        });
-        return res.status(201).json({
-            message: "Account created successfully.",
-            success: true,
-        });
-    } catch (error) {
-        console.log(error);
+  try {
+    const { username, email, password } = req.body;
+    if (!username || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields (username, email, password) are required.",
+      });
     }
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+    return res.status(409).json({
+      success: false,
+      message: "Email already in use. Please use a different one.",
+    });
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await User.create({
+      username,
+      email,
+      password: hashedPassword
+    });
+    return res.status(201).json({
+      message: "Account created successfully.",
+      success: true,
+    });
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 export const login = async (req, res) => {
@@ -156,55 +157,48 @@ export const editProfile = async (req, res) => {
 };
 
 export const followOrUnfollow = async (req, res) => {
-    try {
-       const currentUser = req.user;
-       const currentUserId = currentUser._id.toString();
-        const targetUserId = req.params.id;
+  try {
+    const currentUser = req.user;
+    const currentUserId = currentUser._id.toString();
+    const targetUserId = req.params.id;
 
-        if (currentUserId === targetUserId) {
-            return res.status(400).json({
-                message: 'You cannot follow or unfollow yourself.',
-                success: false
-            });
-        }
+    if (currentUserId === targetUserId)
+      return res.status(400).json({ message: "You cannot follow yourself.", success: false });
 
-        const targetUser = await User.findById(targetUserId);
+    const targetUser = await User.findById(targetUserId);
+    if (!targetUser) return res.status(404).json({ message: "User not found", success: false });
 
-        if (!currentUser || !targetUser) {
-            return res.status(404).json({
-                message: 'User not found.',
-                success: false
-            });
-        }
+    const alreadyFollowing = currentUser.following.includes(targetUserId);
 
-        const alreadyFollowing = currentUser.following.includes(targetUserId);
+    if (alreadyFollowing) {
+      await Promise.all([
+        User.updateOne({ _id: currentUserId }, { $pull: { following: targetUserId } }),
+        User.updateOne({ _id: targetUserId }, { $pull: { followers: currentUserId } }),
+      ]);
+      return res.status(200).json({ message: "Unfollowed", success: true });
+    } else {
+      await Promise.all([
+        User.updateOne({ _id: currentUserId }, { $addToSet: { following: targetUserId } }),
+        User.updateOne({ _id: targetUserId }, { $addToSet: { followers: currentUserId } }),
+      ]);
 
-        if (alreadyFollowing) {
-            await Promise.all([
-                User.updateOne({ _id: currentUserId }, { $pull: { following: targetUserId } }),
-                User.updateOne({ _id: targetUserId }, { $pull: { followers: currentUserId } }),
-            ]);
-            return res.status(200).json({
-                message: 'Unfollowed user successfully.',
-                success: true
-            });
-        } else {
-            await Promise.all([
-                User.updateOne({ _id: currentUserId }, { $push: { following: targetUserId } }),
-                User.updateOne({ _id: targetUserId }, { $push: { followers: currentUserId } }),
-            ]);
-            return res.status(200).json({
-                message: 'Followed user successfully.',
-                success: true
-            });
-        }
-    } catch (error) {
-        console.error('Follow/unfollow error:', error);
-        return res.status(500).json({
-            message: 'An error occurred while processing your request.',
-            success: false
-        });
+      const sender = await User.findById(currentUserId).select("username profilePicture");
+      const notification = {
+        type: "follow",
+        userId: currentUserId,
+        userDetails: sender,
+        message: "started following you",
+      };
+
+      const receiverSocketId = getReceiverSocketId(targetUserId);
+      if (receiverSocketId) io.to(receiverSocketId).emit("receiveNotification", notification);
+
+      return res.status(200).json({ message: "Followed", success: true });
     }
+  } catch (error) {
+    console.error("Follow/Unfollow Error:", error);
+    return res.status(500).json({ message: "Internal server error", success: false });
+  }
 };
 
 export const getSuggestedUsers = async (req, res) => {

@@ -4,6 +4,8 @@ import { Post } from "../models/post.model.js";
 import { User } from "../models/user.model.js";
 import { Comment } from "../models/comment.model.js";
 import { extractHashtags } from "../utils/extractHashtags.js"; 
+import { getReceiverSocketId, io } from "../socket/socket.js";
+
 
 export const addNewPost = async (req, res) => {
   try {
@@ -52,7 +54,6 @@ export const addNewPost = async (req, res) => {
     return res.status(500).json({ message: 'Internal server error', success: false });
   }
 };
-
 
 export const getAllPost = async (req, res) => {
     try {
@@ -134,32 +135,30 @@ export const likePost = async (req, res) => {
         const postId = req.params.id;
 
         const post = await Post.findById(postId);
-        if (!post) return res.status(404).json({ message: 'Post not found', success: false });
+        if (!post) return res.status(404).json({ message: "Post not found", success: false });
 
         await post.updateOne({ $addToSet: { likes: userId } });
         await post.save();
 
-        // Real-time notification (via socket.io)
         const postOwnerId = post.author.toString();
         if (postOwnerId !== userId) {
-            const user = await User.findById(userId).select('username profilePicture');
-            const notification = {
-                type: 'like',
-                userId,
-                userDetails: user,
-                postId,
-                message: 'Your post was liked'
-            };
+        const liker = await User.findById(userId).select("username profilePicture");
+        const notification = {
+            type: "like",
+            userId,
+            postId,
+            userDetails: liker,
+            message: "liked your post",
+        };
 
-            // const postOwnerSocketId = getReceiverSocketId(postOwnerId);
-            // io.to(postOwnerSocketId).emit('notification', notification);
+        const receiverSocketId = getReceiverSocketId(postOwnerId);
+        if (receiverSocketId) io.to(receiverSocketId).emit("receiveNotification", notification);
         }
 
-        return res.status(200).json({ message: 'Post liked successfully', success: true });
-
+        return res.status(200).json({ message: "Post liked", success: true });
     } catch (error) {
-        console.error('Like Post Error:', error);
-        return res.status(500).json({ message: 'Internal server error', success: false });
+        console.error("Like Post Error:", error);
+        return res.status(500).json({ message: "Internal server error", success: false });
     }
 };
 
@@ -200,34 +199,43 @@ export const dislikePost = async (req, res) => {
 };
 
 export const addComment = async (req, res) => {
-    try {
-        const postId = req.params.id;
-        const user = req.user;
-        const userId = user._id.toString();
-        const { commentText } = req.body;
+  try {
+    const { commentText } = req.body;
+    const user = req.user;
+    const userId = user._id.toString();
+    const postId = req.params.id;
 
-        if (!commentText) return res.status(400).json({ message: 'Comment text is required', success: false });
+    if (!commentText) return res.status(400).json({ message: "Comment text is required", success: false });
 
-        const post = await Post.findById(postId);
-        if (!post) return res.status(404).json({ message: 'Post not found', success: false });
+    const post = await Post.findById(postId);
+    if (!post) return res.status(404).json({ message: "Post not found", success: false });
 
-        const comment = await Comment.create({
-            text: commentText,
-            author: userId,
-            post: postId
-        });
+    const comment = await Comment.create({ text: commentText, author: userId, post: postId });
+    await comment.populate({ path: "author", select: "username profilePicture" });
 
-        await comment.populate({ path: 'author', select: 'username profilePicture' });
+    post.comments.push(comment._id);
+    await post.save();
 
-        post.comments.push(comment._id);
-        await post.save();
+    const postOwnerId = post.author.toString();
+    if (postOwnerId !== userId) {
+      const commenter = await User.findById(userId).select("username profilePicture");
+      const notification = {
+        type: "comment",
+        userId,
+        postId,
+        userDetails: commenter,
+        message: "commented on your post",
+      };
 
-        return res.status(201).json({ message: 'Comment added successfully', comment, success: true });
-
-    } catch (error) {
-        console.error('Add Comment Error:', error);
-        return res.status(500).json({ message: 'Internal server error', success: false });
+      const receiverSocketId = getReceiverSocketId(postOwnerId);
+      if (receiverSocketId) io.to(receiverSocketId).emit("receiveNotification", notification);
     }
+
+    return res.status(201).json({ message: "Comment added", comment, success: true });
+  } catch (error) {
+    console.error("Add Comment Error:", error);
+    return res.status(500).json({ message: "Internal server error", success: false });
+  }
 };
 
 export const getCommentsOfPost = async (req, res) => {
