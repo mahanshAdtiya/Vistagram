@@ -12,7 +12,7 @@ import { app, server } from "./socket/socket.js";
 dotenv.config();
 
 const PORT = process.env.PORT || 8080;
-const allowedOrigin = process.env.URL || 'http://localhost:5173';
+const allowedOrigin = process.env.URL || 'https://headout-vistagram.netlify.app/';
 
 const corsOptions = {
   origin: allowedOrigin,
@@ -31,11 +31,6 @@ app.use(morgan((tokens, req, res) => {
     chalk.gray(tokens.body(req, res)),
   ].join(" ");
 }));
-
-app.get('/ping', (req, res) => {
-  res.json({ onlineUsers: Object.keys(userSocketMap) });
-});
-
 
 // 🌐 Middlewares
 app.use(cors(corsOptions));
