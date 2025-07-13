@@ -24,9 +24,10 @@ export const userAPI = {
 
   getProfile: (userId: string) =>
     api.get(`/api/v1/user/${userId}/profile`),
+
+  getSuggestedUsers: () =>
+    api.get(`/api/v1/user/suggested`),
 };
-
-
 
 export const postAPI = {
   addPost: (data: FormData) => api.post('/api/v1/post/addpost', data),
@@ -61,4 +62,6 @@ export const postAPI = {
   },
    bookmarkPost: (postId: string) =>
     api.get(`/api/v1/post/${postId}/bookmark`),
+  
+  getSinglePost: (postId: string) => api.get(`/api/v1/post/${postId}`),
 };

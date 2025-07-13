@@ -3,3 +3,4 @@ export {default as LoginPage} from './Login';
 export {default as HomePage} from './Home';
 export {default as ProfilePage} from './ProfilePage';
 export {default as EditPage} from './EditPage';
+export {default as PostPage} from './PostPage'

@@ -2,8 +2,8 @@ import { useRef, useState, type ChangeEvent } from 'react';
 import { Dialog, DialogContent, DialogHeader } from './ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Textarea } from './ui/textarea';
+import { Input } from './ui/input';
 import { Button } from './ui/button';
-
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -16,10 +16,12 @@ const CreatePost = ({ open, setOpen }: { open: boolean; setOpen: (open: boolean)
   const imageRef = useRef<HTMLInputElement | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [caption, setCaption] = useState<string>('');
+  const [locationText, setLocationText] = useState('');
+  const [locationUrl, setLocationUrl] = useState('');
   const [imagePreview, setImagePreview] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
 
-    const user = useAuthStore((state) => state.user);
+  const user = useAuthStore((state) => state.user);
   const { posts, setPosts } = usePostStore();
 
   const fileChangeHandler = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -33,29 +35,32 @@ const CreatePost = ({ open, setOpen }: { open: boolean; setOpen: (open: boolean)
 
   const createPostHandler = async () => {
     if (!file) {
-      toast.error('Please select an image.')
-      return
+      toast.error('Please select an image.');
+      return;
     }
 
-    const formData = new FormData()
-    formData.append('caption', caption)
-    formData.append('image', file)
+    const formData = new FormData();
+    formData.append('caption', caption);
+    formData.append('locationText', locationText);
+    formData.append('locationUrl', locationUrl);
+    formData.append('image', file);
+
     try {
-      setLoading(true)
-      
-      const res = await postAPI.addPost(formData)
+      setLoading(true);
+
+      const res = await postAPI.addPost(formData);
       if (res.data.success) {
-        setPosts([res.data.post, ...posts])
-        toast.success(res.data.message)
-        setOpen(false)
+        setPosts([res.data.post, ...posts]);
+        toast.success(res.data.message);
+        setOpen(false);
       }
     } catch (error: any) {
-      console.error('Create post error:', error)
-      toast.error(error.response?.data?.message || 'Failed to create post.')
+      console.error('Create post error:', error);
+      toast.error(error.response?.data?.message || 'Failed to create post.');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <Dialog open={open}>
@@ -79,6 +84,19 @@ const CreatePost = ({ open, setOpen }: { open: boolean; setOpen: (open: boolean)
           className='focus-visible:ring-transparent border-none'
           placeholder='Write a caption...'
         />
+
+      <Input
+        value={locationText}
+        onChange={(e) => setLocationText(e.target.value)}
+        placeholder='Location name (e.g. Bangalore)'
+        className='border-gray-300 text-sm'
+      />
+      <Input
+        value={locationUrl}
+        onChange={(e) => setLocationUrl(e.target.value)}
+        placeholder='Google Maps URL (e.g. https://maps.google.com/?q=...)'
+        className='border-gray-300 text-sm'
+      />
 
         {imagePreview && (
           <div className='w-full h-64 flex items-center justify-center'>

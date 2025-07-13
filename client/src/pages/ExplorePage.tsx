@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Pagination, PaginationContent, PaginationItem, PaginationPrevious, PaginationNext, PaginationLink, } from "@/components/ui/pagination";
 import { postAPI } from "@/service/request";
 import PostFilter from "@/components/PostFilter";
-import Post from "@/components/Post"; 
+import {Post} from "@/components"; 
 
 import type { PostType} from '@/store/usePostStore';
 
