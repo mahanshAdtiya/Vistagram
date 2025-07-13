@@ -5,6 +5,7 @@ import getDataUri from "../utils/datauri.js";
 import cloudinary from "../utils/cloudinary.js";
 import { Post } from "../models/post.model.js";
 import { getReceiverSocketId, io } from "../socket/socket.js";
+import mongoose from 'mongoose';
 
 export const register = async (req, res) => {
   try {

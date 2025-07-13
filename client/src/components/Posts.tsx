@@ -5,7 +5,7 @@ import { postAPI } from '@/service/request';
 import { toast } from 'sonner';
 
 const Posts = () => {
-  const { posts, setPosts } = usePostStore();
+  const { posts, refreshKey, setPosts } = usePostStore();
 
   useEffect(() => {
     const fetchFeedPosts = async () => {
@@ -21,7 +21,7 @@ const Posts = () => {
     };
 
     fetchFeedPosts();
-  }, []);
+  }, [refreshKey]);
 
 
   if (posts.length === 0) return <p className="text-center mt-4">No posts found.</p>;

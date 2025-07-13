@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip";
-import { ArrowDownUp, Clock, ThumbsUp } from "lucide-react";
+// import {
+//   Tooltip,
+//   TooltipTrigger,
+//   TooltipContent,
+// } from "@/components/ui/tooltip";
+// import { ArrowDownUp, ThumbsUp } from "lucide-react";
 
 interface SearchParams {
   authorId: string;
@@ -59,34 +59,34 @@ useEffect(() => {
     }));
   };
 
-  const toggleSort = (
-    key: "sortLikes" | "sortTime"
-  ) => {
-    setTableParams((prev: TableParams) => {
-      const current = prev.searchParams[key];
-      let next: "asc" | "desc" | "" = current === "asc" ? "desc" : current === "desc" ? "" : "asc";
-      return {
-        ...prev,
-        searchParams: {
-          ...prev.searchParams,
-          [key]: next,
-        },
-      };
-    });
-  };
+  // const toggleSort = (
+  //   key: "sortLikes" | "sortTime"
+  // ) => {
+  //   setTableParams((prev: TableParams) => {
+  //     const current = prev.searchParams[key];
+  //     let next: "asc" | "desc" | "" = current === "asc" ? "desc" : current === "desc" ? "" : "asc";
+  //     return {
+  //       ...prev,
+  //       searchParams: {
+  //         ...prev.searchParams,
+  //         [key]: next,
+  //       },
+  //     };
+  //   });
+  // };
 
-  const getSortState = (key: "sortLikes" | "sortTime"): "asc" | "desc" | undefined => {
-      const val = tableParams.searchParams[key];
-      return val === "" ? undefined : val;
-  };
+  // const getSortState = (key: "sortLikes" | "sortTime"): "asc" | "desc" | undefined => {
+  //     const val = tableParams.searchParams[key];
+  //     return val === "" ? undefined : val;
+  // };
 
-  const iconClass = (active: boolean, direction?: "asc" | "desc") =>
-    `
-      h-5 w-5 
-      transition-transform duration-200 ease-in-out 
-      ${active ? "text-primary font-bold" : "text-muted-foreground"} 
-      ${direction === "asc" ? "rotate-0" : direction === "desc" ? "rotate-180" : ""}
-    `;
+  // const iconClass = (active: boolean, direction?: "asc" | "desc") =>
+  //   `
+  //     h-5 w-5 
+  //     transition-transform duration-200 ease-in-out 
+  //     ${active ? "text-primary font-bold" : "text-muted-foreground"} 
+  //     ${direction === "asc" ? "rotate-0" : direction === "desc" ? "rotate-180" : ""}
+  //   `;
 
   return (
     <div className="flex flex-col md:flex-row items-center gap-3 mb-6 px-4 md:px-0">
@@ -104,7 +104,7 @@ useEffect(() => {
 
       <div className="flex items-center gap-3">
         {/* Likes Sort */}
-        <Tooltip>
+        {/* <Tooltip>
           <TooltipTrigger asChild>
             <Button className="px-7" variant="ghost" size="icon" onClick={() => toggleSort("sortLikes")}>
               <div className="flex items-center justify-between">
@@ -121,27 +121,7 @@ useEffect(() => {
           <TooltipContent>
             <p>Sort by Likes (asc/desc)</p>
           </TooltipContent>
-        </Tooltip>
-
-        {/* Time Sort */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button className="px-7" variant="ghost" size="icon" onClick={() => toggleSort("sortTime")}>
-              <div className="flex items-center justify-between">
-               <Clock className="h-5 w-5 mr-1 text-muted-foreground" />
-                <ArrowDownUp
-                    className={iconClass(
-                    !!getSortState("sortTime"),
-                    getSortState("sortTime")
-                    )}
-                />
-                </div>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Sort by Time (asc/desc)</p>
-          </TooltipContent>
-        </Tooltip>
+        </Tooltip> */}
       </div>
     </div>
   );

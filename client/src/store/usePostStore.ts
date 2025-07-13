@@ -26,6 +26,8 @@ interface PostStore {
   selectedPost: PostType | null
   setPosts: (posts: PostType[]) => void
   setSelectedPost: (post: PostType | null) => void
+  refreshKey: number;
+  triggerRefetch: () => void;
 }
 
 export const usePostStore = create<PostStore>((set) => ({
@@ -33,4 +35,6 @@ export const usePostStore = create<PostStore>((set) => ({
   selectedPost: null,
   setPosts: (posts) => set({ posts }),
   setSelectedPost: (post) => set({ selectedPost: post }),
+  refreshKey: 0,
+  triggerRefetch: () => set((state) => ({ refreshKey: state.refreshKey + 1 })),
 }))

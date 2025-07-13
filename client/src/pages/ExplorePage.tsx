@@ -1,13 +1,18 @@
 import { useEffect, useState } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { Pagination, PaginationContent, PaginationItem, PaginationPrevious, PaginationNext, PaginationLink, } from "@/components/ui/pagination";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationPrevious,
+  PaginationNext,
+  PaginationLink,
+} from "@/components/ui/pagination";
 import { postAPI } from "@/service/request";
 import PostFilter from "@/components/PostFilter";
-import {Post} from "@/components"; 
-
-import type { PostType} from '@/store/usePostStore';
-
+import { Post } from "@/components";
+import { usePostStore, type PostType } from "@/store/usePostStore";
 
 interface SearchParams {
   authorId: string;
@@ -35,6 +40,7 @@ const PostExplorePage: React.FC = () => {
     },
   });
 
+  const { refreshKey } = usePostStore();
   const totalPages = Math.ceil(tableParams.total / tableParams.pageSize);
 
   const handlePageChange = (newPage: number) => {
@@ -44,7 +50,7 @@ const PostExplorePage: React.FC = () => {
 
   useEffect(() => {
     fetchPosts();
-  }, [tableParams.page, tableParams.pageSize, tableParams.searchParams]);
+  }, [tableParams.page, tableParams.pageSize, tableParams.searchParams, refreshKey]);
 
   const fetchPosts = async () => {
     setLoading(true);
@@ -60,12 +66,13 @@ const PostExplorePage: React.FC = () => {
       });
 
       const result = response.data;
+      console.log("HAHA RESPONSE OF EXPLORE: ", result)
 
       if (result.success && Array.isArray(result.posts)) {
         setPosts(result.posts);
         setTableParams((prev) => ({
           ...prev,
-          total: result.total || 0,
+          total: result.totalPosts || 0,
         }));
       } else {
         setPosts([]);
@@ -81,27 +88,30 @@ const PostExplorePage: React.FC = () => {
   return (
     <div className="p-6">
       <div className="w-full">
-        <PostFilter
-          tableParams={tableParams}
-          setTableParams={setTableParams}
-        />
+        <PostFilter tableParams={tableParams} setTableParams={setTableParams} />
       </div>
 
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 justify-center">
-      {loading
-        ? Array.from({ length: tableParams.pageSize }).map((_, i) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 justify-center min-h-[400px]">
+        {loading ? (
+          Array.from({ length: tableParams.pageSize }).map((_, i) => (
             <Skeleton key={i} className="w-full h-[300px] rounded-xl" />
           ))
-        : posts.map((post) => <Post key={post._id} post={post} />)}
-    </div>
-
+        ) : posts.length > 0 ? (
+          posts.map((post) => <Post key={post._id} post={post} />)
+        ) : (
+          <p className="col-span-full text-center text-muted-foreground">
+            No posts found.
+          </p>
+        )}
+      </div>
 
       {totalPages > 1 && (
-        <Pagination className="mb-10 flex justify-center">
+        <Pagination className="mb-10 mt-6 flex justify-center">
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious
                 onClick={() => handlePageChange(tableParams.page - 1)}
+                className={tableParams.page === 1 ? "pointer-events-none opacity-50" : ""}
               />
             </PaginationItem>
 
@@ -119,6 +129,7 @@ const PostExplorePage: React.FC = () => {
             <PaginationItem>
               <PaginationNext
                 onClick={() => handlePageChange(tableParams.page + 1)}
+                className={tableParams.page === totalPages ? "pointer-events-none opacity-50" : ""}
               />
             </PaginationItem>
           </PaginationContent>

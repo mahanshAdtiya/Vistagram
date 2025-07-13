@@ -56,56 +56,87 @@ export const addNewPost = async (req, res) => {
 };
 
 export const getAllPost = async (req, res) => {
-    try {
-        const { authorId, sortLikes, hashtags, location } = req.query;
+  try {
+    const {
+      authorId, 
+      sortLikes,
+      hashtags,
+      location,
+      page,
+      limit,
+    } = req.query;
 
-        const query = {};
+    const query = {};
 
-        if (authorId) {
-            query.author = authorId;
-        }
-
-        if (hashtags) {
-            const hashtagArray = hashtags.split(',').map(tag => tag.trim().toLowerCase());
-            query.hashtags = { $in: hashtagArray };
-        }
-        if (location) {
-            query.locationText = { $regex: location, $options: 'i' };
-        }
-        let sortOptions = { createdAt: -1 };
-
-        if (sortLikes === 'asc') {
-            sortOptions = { likesCount: 1 };
-        } else if (sortLikes === 'desc') {
-            sortOptions = { likesCount: -1 };
-        }
-
-        const posts = await Post.aggregate([
-            { $match: query },
-            {
-                $addFields: {
-                    likesCount: { $size: "$likes" }
-                }
-            },
-            { $sort: sortOptions }
-        ]);
-
-        const populatedPosts = await Post.populate(posts, [
-            { path: 'author', select: 'username profilePicture' },
-            {
-                path: 'comments',
-                options: { sort: { createdAt: -1 } },
-                populate: { path: 'author', select: 'username profilePicture' }
-            }
-        ]);
-
-        return res.status(200).json({ posts: populatedPosts, success: true });
-
-    } catch (error) {
-        console.error('Get All Posts Error:', error);
-        return res.status(500).json({ message: 'Internal server error', success: false });
+    if (authorId) {
+      const user = await User.findOne({ username: authorId }).select('_id');
+      if (!user) {
+        return res.status(404).json({ message: 'User not found', success: false });
+      }
+      query.author = user._id;
     }
+
+    if (hashtags) {
+      const hashtagArray = hashtags.split(',').map(tag => tag.trim().toLowerCase());
+      query.hashtags = { $in: hashtagArray };
+    }
+
+
+    if (location) {
+      query.locationText = { $regex: location, $options: 'i' };
+    }
+
+    const sortOptions =
+      sortLikes === 'asc'
+        ? { likesCount: 1 }
+        : sortLikes === 'desc'
+        ? { likesCount: -1 }
+        : { createdAt: -1 };
+
+    const parsedPage = parseInt(page);
+    const parsedLimit = parseInt(limit);
+    const skip = isNaN(parsedPage) || isNaN(parsedLimit) ? 0 : (parsedPage - 1) * parsedLimit;
+
+    const aggregationPipeline = [
+      { $match: query },
+      {
+        $addFields: {
+          likesCount: { $size: '$likes' },
+        },
+      },
+      { $sort: sortOptions },
+    ];
+
+    if (!isNaN(parsedPage) && !isNaN(parsedLimit)) {
+      aggregationPipeline.push({ $skip: skip }, { $limit: parsedLimit });
+    }
+
+    const [posts, totalPosts] = await Promise.all([
+      Post.aggregate(aggregationPipeline),
+      Post.countDocuments(query),
+    ]);
+
+    const populatedPosts = await Post.populate(posts, [
+      { path: 'author', select: 'username profilePicture followers' },
+      {
+        path: 'comments',
+        options: { sort: { createdAt: -1 } },
+        populate: { path: 'author', select: 'username profilePicture followers' },
+      },
+    ]);
+
+    return res.status(200).json({
+      posts: populatedPosts,
+      totalPosts,
+      success: true,
+    });
+
+  } catch (error) {
+    console.error('Get All Posts Error:', error);
+    return res.status(500).json({ message: 'Internal server error', success: false });
+  }
 };
+
 
 export const getUserPost = async (req, res) => {
     try {
@@ -292,11 +323,11 @@ export const getFeedPosts = async (req, res) => {
 
     const posts = await Post.find({ author: { $in: authors } })
       .sort({ createdAt: -1 })
-      .populate({ path: 'author', select: 'username profilePicture' })
+      .populate({ path: 'author', select: 'username profilePicture followers' })
       .populate({
         path: 'comments',
         options: { sort: { createdAt: -1 } },
-        populate: { path: 'author', select: 'username profilePicture' }
+        populate: { path: 'author', select: 'username profilePicture followers' }
       });
 
     return res.status(200).json({ posts, success: true });

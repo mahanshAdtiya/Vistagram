@@ -4,7 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Trash, MapPin } from 'lucide-react';
 import { useSocketStore } from '@/store/useSocketStore';
 
-import type { PostType } from '@/store/usePostStore';
+import type { PostType} from '@/store/usePostStore';
+// import type { AuthUser} from '@/store/useAuthStore';
+
 
 interface Props {
   post: PostType;
@@ -15,7 +17,6 @@ interface Props {
 
 const PostHeader: React.FC<Props> = ({ post, user, onDelete, onFollowToggle }) => {
   const isOnline = useSocketStore((s) => s.isUserOnline(post.author._id));
-
   return (
     <div className="flex items-center justify-between flex-wrap gap-y-2">
       <div className="flex items-center gap-2">

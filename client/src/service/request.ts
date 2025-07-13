@@ -1,6 +1,5 @@
 import { api } from './api';
 
-// Inside @/service/request.ts or where userAPI is defined
 export const userAPI = {
   register: (data: { username: string; email: string; password: string }) =>
     api.post('/api/v1/user/register', data),
@@ -12,7 +11,6 @@ export const userAPI = {
 
   getMe: () => api.get('/api/v1/user/me'),
 
-  // ✅ Updated to match router endpoint
   editProfile: (formData: FormData) =>
     api.post('/api/v1/user/profile/edit', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
