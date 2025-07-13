@@ -4,13 +4,13 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Textarea } from './ui/textarea';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { usePostStore } from '@/store/usePostStore';
 import { readFileAsDataURL } from '@/utils/readFile';
 import { useAuthStore } from '@/store/useAuthStore';
-import { postAPI } from '@/service/request';
+import { postAPI, genAIAPI} from '@/service/request';
 
 const CreatePost = ({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) => {
   const imageRef = useRef<HTMLInputElement | null>(null);
@@ -20,6 +20,7 @@ const CreatePost = ({ open, setOpen }: { open: boolean; setOpen: (open: boolean)
   const [locationUrl, setLocationUrl] = useState('');
   const [imagePreview, setImagePreview] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
+  const [generating, setGenerating] = useState<boolean>(false);
 
   const user = useAuthStore((state) => state.user);
   const { posts, setPosts } = usePostStore();
@@ -47,7 +48,6 @@ const CreatePost = ({ open, setOpen }: { open: boolean; setOpen: (open: boolean)
 
     try {
       setLoading(true);
-
       const res = await postAPI.addPost(formData);
       if (res.data.success) {
         setPosts([res.data.post, ...posts]);
@@ -59,6 +59,24 @@ const CreatePost = ({ open, setOpen }: { open: boolean; setOpen: (open: boolean)
       toast.error(error.response?.data?.message || 'Failed to create post.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const generateCaptionHandler = async () => {
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      setGenerating(true);
+      const res = await genAIAPI.generateCaption(formData);
+      const captionFromAI = res.data.caption;
+      setCaption(captionFromAI);
+      toast.success('AI-generated caption added!');
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to generate caption');
+    } finally {
+      setGenerating(false);
     }
   };
 
@@ -85,18 +103,39 @@ const CreatePost = ({ open, setOpen }: { open: boolean; setOpen: (open: boolean)
           placeholder='Write a caption...'
         />
 
-      <Input
-        value={locationText}
-        onChange={(e) => setLocationText(e.target.value)}
-        placeholder='Location name (e.g. Bangalore)'
-        className='border-gray-300 text-sm'
-      />
-      <Input
-        value={locationUrl}
-        onChange={(e) => setLocationUrl(e.target.value)}
-        placeholder='Google Maps URL (e.g. https://maps.google.com/?q=...)'
-        className='border-gray-300 text-sm'
-      />
+        <div className="flex justify-end">
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!file || generating}
+            onClick={generateCaptionHandler}
+            className="gap-2 mb-2"
+          >
+            {generating ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" /> Generating...
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-4 w-4 text-purple-500" />
+                Generate with AI
+              </>
+            )}
+          </Button>
+        </div>
+
+        <Input
+          value={locationText}
+          onChange={(e) => setLocationText(e.target.value)}
+          placeholder='Location name (e.g. Bangalore)'
+          className='border-gray-300 text-sm'
+        />
+        <Input
+          value={locationUrl}
+          onChange={(e) => setLocationUrl(e.target.value)}
+          placeholder='Google Maps URL (e.g. https://maps.google.com/?q=...)'
+          className='border-gray-300 text-sm'
+        />
 
         {imagePreview && (
           <div className='w-full h-64 flex items-center justify-center'>
@@ -111,12 +150,12 @@ const CreatePost = ({ open, setOpen }: { open: boolean; setOpen: (open: boolean)
 
         {imagePreview && (
           loading ? (
-            <Button disabled>
+            <Button disabled className="w-full mt-2">
               <Loader2 className='mr-2 h-4 w-4 animate-spin' />
               Please wait
             </Button>
           ) : (
-            <Button onClick={createPostHandler} type='submit' className='w-full'>
+            <Button onClick={createPostHandler} type='submit' className='w-full mt-2'>
               Post
             </Button>
           )
