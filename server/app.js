@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import connectDB from "./utils/db.js";
 import userRoute from "./routes/user.route.js";
+import postRoute from "./routes/post.route.js";
 const app = express();
 
 import path from "path";
@@ -28,6 +29,7 @@ app.use(cors(corsOptions));
 
 
 app.use("/api/v1/user", userRoute);
+app.use("/api/v1/post", postRoute);
 
 app.listen(PORT, () => {
     connectDB();
