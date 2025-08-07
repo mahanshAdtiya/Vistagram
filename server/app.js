@@ -6,6 +6,8 @@ import connectDB from "./utils/db.js";
 import userRoute from "./routes/user.route.js";
 import postRoute from "./routes/post.route.js";
 import genAIRoute from "./routes/genAI.route.js"
+import reviewRoute from "./routes/review.route.js";
+import productRoute from "./routes/product.route.js";
 import morgan from "morgan";
 import chalk from "chalk";
 import { app, server } from "./socket/socket.js";
@@ -61,10 +63,13 @@ app.use((req, res, next) => {
   next();
 });
 
+//6873697ceedf5ddd13e5f2a1
 // 📦 Routes
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/post", postRoute);
 app.use("/api/v1/genAI", genAIRoute)
+app.use('/api/v1/review', reviewRoute);
+app.use('/api/v1/product', productRoute);
 
 server.listen(PORT, () => {
   connectDB();

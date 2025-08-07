@@ -54,6 +54,7 @@ export const login = async (req, res) => {
                 success: false,
             });
         }
+        console.log("HAHA USER: ",user)
         const isPasswordMatch = await bcrypt.compare(password, user.password);
         if (!isPasswordMatch) {
             return res.status(401).json({
@@ -64,27 +65,10 @@ export const login = async (req, res) => {
 
         const token = await jwt.sign({ userId: user._id }, process.env.SECRET_KEY, { expiresIn: '1d' });
 
-        const populatedPosts = (
-            await Promise.all(
-                user.posts.map(async (postId) => {
-                    const post = await Post.findById(postId);
-                    if (post && post.author && post.author.equals(user._id)) {
-                        return post;
-                    }
-                    return null;
-                })
-            )
-        ).filter(Boolean);
-
         user = {
             _id: user._id,
             username: user.username,
             email: user.email,
-            profilePicture: user.profilePicture,
-            bio: user.bio,
-            followers: user.followers,
-            following: user.following,
-            posts: populatedPosts
         }
         return res.cookie('token', token, {
           httpOnly: true,
